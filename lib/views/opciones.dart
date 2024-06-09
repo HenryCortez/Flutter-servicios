@@ -16,6 +16,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
  
   Future<List<Estudiante>> asignarEstudiantes() async {
     List<dynamic> data = await UserServices.getEstudiantes();
+    print (data.toString());
     return data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
   }
 
@@ -46,7 +47,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
             return const Center(child: Text('No hay estudiantes disponibles'));
           } else {
             estudiantes = snapshot.data!;
-            print(estudiantes);
+          
             return Column(
               children: [
                 ElevatedButton(
