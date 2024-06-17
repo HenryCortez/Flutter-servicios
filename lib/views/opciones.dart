@@ -13,13 +13,24 @@ class Material3BottomNav extends StatefulWidget {
 
 class _Material3BottomNavState extends State<Material3BottomNav> {
   late List<Estudiante> estudiantes;
-
+   late List<Estudiante> estudiantesFiltrados;
+   @override
+  void initState() {
+    
+    super.initState();
+    estudiantesFiltrados = [];
+  }
+     final TextEditingController _busquedaController = TextEditingController();
   Future<List<Estudiante>> asignarEstudiantes() async {
     List<dynamic> data = await UserServices.getEstudiantes();
     print(data.toString());
-    return data.isEmpty
+    if (estudiantesFiltrados.isNotEmpty) {
+      return estudiantesFiltrados;
+    }
+    estudiantesFiltrados = data.isEmpty
         ? []
         : data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
+    return estudiantesFiltrados;
     // return data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
   }
 
@@ -29,6 +40,18 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
       // Si la eliminación fue exitosa, actualiza la lista de estudiantes
       setState(() {});
     }
+  }
+
+    void buscarEstudiante() {
+    setState(() {
+      estudiantesFiltrados = estudiantes
+          .where((estudiante) =>
+              estudiante.id
+                  .toLowerCase()
+                  .contains(_busquedaController.text.toLowerCase()) 
+              )
+          .toList();
+    });
   }
 
   @override
@@ -48,9 +71,29 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
             return const Center(child: Text('No hay estudiantes disponibles'));
           } else {
             estudiantes = snapshot.data!;
-
+            estudiantesFiltrados = estudiantes;
             return Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _busquedaController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Buscar',
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.clear),
+                        onPressed: () {
+                          _busquedaController.clear();
+                          setState(() {
+                            estudiantesFiltrados = [];
+                          });
+                        } ,
+                      ),
+                    ),
+                    onSubmitted: (value) => buscarEstudiante(),
+                  ),
+                ),
                 ElevatedButton(
                   child: const Text('Agregar nuevo estudiante'),
                   onPressed: () async {
@@ -61,26 +104,28 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
                               const FormularioEstudiantePage()),
                     );
                     if (result == true) {
-                      setState(() {}); // Recarga la página
+                      setState(() {
+                        estudiantesFiltrados = [];
+                      }); // Recarga la página
                     }
                   },
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: estudiantes.length,
+                    itemCount: estudiantesFiltrados.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text('ID: ${estudiantes[index].id}'),
+                        title: Text('ID: ${estudiantesFiltrados[index].id}'),
                         onTap: () {
                           showDialog(
                             context: context,
                             builder: (context) {
                               return AlertDialog(
                                 content: Text(
-                                    'Nombre: ${estudiantes[index].nombre}'
-                                    '\nApellido: ${estudiantes[index].apellido}'
-                                    '\nDireccion: ${estudiantes[index].direccion}'
-                                    '\nTelefono: ${estudiantes[index].telefono}'),
+                                    'Nombre: ${estudiantesFiltrados[index].nombre}'
+                                    '\nApellido: ${estudiantesFiltrados[index].apellido}'
+                                    '\nDireccion: ${estudiantesFiltrados[index].direccion}'
+                                    '\nTelefono: ${estudiantesFiltrados[index].telefono}'),
                                 actions: <Widget>[
                                   TextButton(
                                     child: const Text(
@@ -102,10 +147,12 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) =>
-                                                 FormularioUpdateEstudiantePage(estudiante: estudiantes[index],)),
+                                                 FormularioUpdateEstudiantePage(estudiante: estudiantesFiltrados[index],)),
                                       );
                                       if (result == true) {
-                                        setState(() {});
+                                        setState(() {
+                                          estudiantesFiltrados = [];
+                                        });
                                          Navigator.of(context).pop();// Recarga la página
                                       }
                                     },
