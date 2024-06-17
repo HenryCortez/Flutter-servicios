@@ -44,12 +44,13 @@ class UserServices {
     }
 }
 
-  static putEstudiantes(id,data) async {
+  static putEstudiantes(Estudiante est) async {
     try {
-      final url = Uri.parse('https://10.0.2.2:3306/quinto/clase/controllers/apiRest.php?id=$id');
-      var response = await http.put(url, 
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(data));
+      var urld = Uri.parse("$url?id=${est.id}&nombre=${est.nombre}&apellido=${est.apellido}&direccion=${est.direccion}&telefono=${est.telefono}");
+      HttpClient httpClient = HttpClient()..badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
+      IOClient ioClient = IOClient(httpClient);
+      var response = await ioClient.put(urld, 
+      headers: {"Content-Type": "application/json"},);
       if (response.statusCode == 200) {
         return true;
       }
@@ -57,7 +58,7 @@ class UserServices {
     }catch(e){
       print(e);
     }
-    }
+  }
 
   static deleteEstudiantes(id) async {
      try {

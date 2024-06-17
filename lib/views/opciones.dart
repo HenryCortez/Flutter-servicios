@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:servicios/models/estudiante.dart';
 import 'package:servicios/services/user_services.dart';
+import 'package:servicios/views/formularioEditar.dart';
 import 'package:servicios/views/formularioEstudiante.dart';
 
 class Material3BottomNav extends StatefulWidget {
@@ -11,22 +12,22 @@ class Material3BottomNav extends StatefulWidget {
 }
 
 class _Material3BottomNavState extends State<Material3BottomNav> {
-
   late List<Estudiante> estudiantes;
- 
+
   Future<List<Estudiante>> asignarEstudiantes() async {
     List<dynamic> data = await UserServices.getEstudiantes();
-    print (data.toString());
-    return data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
+    print(data.toString());
+    return data.isEmpty
+        ? []
+        : data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
+    // return data.map<Estudiante>((item) => Estudiante.fromJson(item)).toList();
   }
 
   void eliminarEstudiante(int index) async {
     final result = await UserServices.deleteEstudiantes(estudiantes[index].id);
     if (result == true) {
       // Si la eliminación fue exitosa, actualiza la lista de estudiantes
-      setState(() {
-       
-      });
+      setState(() {});
     }
   }
 
@@ -47,7 +48,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
             return const Center(child: Text('No hay estudiantes disponibles'));
           } else {
             estudiantes = snapshot.data!;
-          
+
             return Column(
               children: [
                 ElevatedButton(
@@ -60,9 +61,7 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
                               const FormularioEstudiantePage()),
                     );
                     if (result == true) {
-                      setState(() {
-                        
-                      }); // Recarga la página
+                      setState(() {}); // Recarga la página
                     }
                   },
                 ),
@@ -84,12 +83,33 @@ class _Material3BottomNavState extends State<Material3BottomNav> {
                                     '\nTelefono: ${estudiantes[index].telefono}'),
                                 actions: <Widget>[
                                   TextButton(
-                                    child: const Text('Eliminar'),
+                                    child: const Text(
+                                      'Eliminar',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                     onPressed: () async {
                                       Navigator.of(context).pop();
                                       eliminarEstudiante(index);
                                     },
                                   ),
+                                  TextButton(
+                                    child: const Text(
+                                      'Editar',
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                 FormularioUpdateEstudiantePage(estudiante: estudiantes[index],)),
+                                      );
+                                      if (result == true) {
+                                        setState(() {});
+                                         Navigator.of(context).pop();// Recarga la página
+                                      }
+                                    },
+                                  )
                                 ],
                               );
                             },
